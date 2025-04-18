@@ -1,0 +1,32 @@
+# 💡 Python Environments (pip/conda)
+env/
+venv/
+phi2-env/
+.venv/
+ENV/
+env.bak/
+*.env
+
+# 🔽 Installed Packages
+**/site-packages/
+*.dist-info/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 🚫 Ignore package manager cache & build files
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+build/
+dist/
+
+# VSCode & Misc
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Notebooks
+.ipynb_checkpoints/
