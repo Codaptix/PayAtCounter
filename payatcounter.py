@@ -2,13 +2,17 @@ import pandas as pd
 from typing import List, TypedDict
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.llms import Ollama
 from langgraph.graph import StateGraph
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
 
-# Step 1: Load CSV data
-df = pd.read_csv("smoke_store_menu.csv")
+# ─────────────────────────────────────────────────────────────
+# Step 1: Load your menu + coupon data
+# ─────────────────────────────────────────────────────────────
+df = pd.read_csv("smoke_store_menu.csv")  # CSV should have ItemID, ItemName, Category, Price, CouponCode, DiscountType, DiscountValue, MinPurchase
+
 docs: List[Document] = []
 for _, row in df.iterrows():
     text = (
@@ -18,6 +22,9 @@ for _, row in df.iterrows():
     )
     docs.append(Document(page_content=text, metadata={"id": row["ItemID"]}))
 
+# ─────────────────────────────────────────────────────────────
+# Step 2: Split into chunks (if needed)
+# ─────────────────────────────────────────────────────────────
 splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 all_splits = splitter.split_documents(docs)
 
@@ -25,7 +32,7 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 vector_store = Chroma.from_documents(all_splits, embeddings)
 
 # ─────────────────────────────────────────────
-# Define State
+# Step 3: Define State
 # ─────────────────────────────────────────────
 class State(TypedDict):
     question: str
@@ -36,7 +43,7 @@ class State(TypedDict):
 llm = OllamaLLM(model="mistral")
 
 # ─────────────────────────────────────────────
-# Nodes
+# Step 4: Nodes
 # ─────────────────────────────────────────────
 def correct_grammar(state: State) -> State:
     prompt = (
@@ -86,7 +93,6 @@ def coupon_agent(state: State) -> State:
 
 def end_node(state: State) -> State:
     final_answer = state["answer"]
-    # Clean up follow-up question
     if "Would you like to buy it?" in final_answer:
         final_answer = final_answer.split("Would you like to buy it?")[0].strip()
     return {
@@ -100,7 +106,7 @@ def route_response(state: State) -> str:
     return "coupon_agent" if state["user_response"] == "yes" else "end"
 
 # ─────────────────────────────────────────────
-# Build LangGraph
+# Step 5: Build LangGraph
 # ─────────────────────────────────────────────
 graph_builder = StateGraph(State)
 graph_builder.add_node("grammar_corrector", correct_grammar)
