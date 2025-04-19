@@ -1,0 +1,17 @@
+name: Auto Assign Reviewers
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+jobs:
+  add-reviewers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add reviewers
+        uses: madrapps/auto-assign-reviewers@v1.0.0
+        with:
+          reviewers: |
+            akhil-codaptix
+            teammate-1
+            teammate-2
