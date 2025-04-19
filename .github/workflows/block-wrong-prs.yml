@@ -1,0 +1,17 @@
+name: Allow only development to merge into main
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  block_non_dev_merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if source branch is 'development'
+        run: |
+          echo "🔍 Pull Request source branch: ${{ github.head_ref }}"
+          if [ "${{ github.head_ref }}" != "development" ]; then
+            echo "❌ Only 'development' is allowed to merge into 'main'."
+            exit 1
+          fi
